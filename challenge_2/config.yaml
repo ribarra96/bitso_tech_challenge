@@ -1,0 +1,11 @@
+snowflake:
+  user: BITSOCHALLENGE
+  password: BitsoChallenge01!
+  account: jl08063.us-east-2.aws
+  role: sysadmin
+  warehouse: compute_wh
+  database: ELT_STAGING
+  schema: RAW_STAGE
+
+variables:
+  date_column_name: event_timestamp
