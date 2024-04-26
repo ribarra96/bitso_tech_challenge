@@ -7,4 +7,25 @@ variables:
   config_database: ELT_CONFIG
   config_schema: CONFIG_SCHEMA
   elt_metadata: CONFIG_METADATA
-
+  mdm_database_name: MDM_DEV
+  mdm_schema_name: MDM_SCHEMA
+  log_database_name: LOGGING_DATABASE
+  log_schema_name: LOGGING_SCHEMA
+  log_table_name: MDM_PROCESS_LOG
+  source_users_table_name: C_USERS_FINAL
+  source_event_table_name: C_EVENT_FINAL
+  source_deposit_table_name: C_DEPOSIT_FINAL
+  source_withdrawal_table_name: C_WITHDRAWAL_FINAL
+  target_users_table_name: USERS_DIM
+  event_name_table_name: EVENT_NAME_DIM
+  login_type_table_name: LOGIN_TYPE_DIM
+  currency_table_name: CURRENCY_DIM
+  interface_table_name: INTERFACE_DIM
+  tx_table_name: TX_STATUS_DIM
+  user_activities_table_name: USER_ACTIVITIES_FACT
+  concat_df: [withdrawal_df, event_df, deposit_df]
+  values_dict: [interface_dict, event_name_dict, currency_dict, tx_status_dict, login_type_dict]
+  convert_timestamp: EVENT_TIMESTAMP
+  convert_string: USER_ID
+  convert_int: ['INTERFACE_ID', 'CURRENCY_ID', 'TX_STATUS_ID', 'EVENT_NAME_ID', 'LOGIN_TYPE_ID']
+  drop_columns: ['ID']
