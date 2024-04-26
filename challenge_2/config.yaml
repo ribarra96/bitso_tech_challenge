@@ -6,6 +6,3 @@ snowflake:
   warehouse: compute_wh
   database: ELT_STAGING
   schema: RAW_STAGE
-
-variables:
-  date_column_name: event_timestamp

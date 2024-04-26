@@ -1,0 +1,10 @@
+variables:
+  date_column_name: event_timestamp
+  staging_database_name: ELT_STAGING
+  staging_schema_name: RAW_STAGE
+  cleaning_schema_name: CLEAN_STAGE
+  login_types: ['login', '2falogin', 'login_api']
+  config_database: ELT_CONFIG
+  config_schema: CONFIG_SCHEMA
+  elt_metadata: CONFIG_METADATA
+
