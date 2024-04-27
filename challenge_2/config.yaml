@@ -6,3 +6,4 @@ snowflake:
   warehouse: compute_wh
   database: ELT_STAGING
   schema: RAW_STAGE
+  
