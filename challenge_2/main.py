@@ -62,7 +62,7 @@ class ELT:
         - step (str): Step in the ETL process.
         - status (str): Status of the step.
         """
-        log = self.session.sql(f"INSERT INTO {self.log_database_name}.{self.log_schema_name}.{self.log_table_name} (STEP, STATUS, MESSAGE) VALUES ({step}, {status}, {message}) ").to_pandas()
+        log = self.session.sql(f"INSERT INTO {self.log_database_name}.{self.log_schema_name}.{self.log_table_name} (STEP, STATUS, MESSAGE) VALUES ('{step}', '{status}', '{message}') ").collect()
         return "Successfull log"
     
     def extract_csv_to_df(self, input_file, date_column_name):
@@ -354,7 +354,7 @@ class MDM_BUILDER:
         Returns:
         - new_rows_df (DataFrame): DataFrame containing new rows added to the dimension table.
         """
-        self.log_writer(step="table_dim_builder", status="start")
+        self.log_writter(step="table_dim_builder", status="start")
         get_values_query = self.session.sql(f"SELECT * FROM {self.mdm_database_name}.{self.mdm_schema_name}.{table_name}").to_pandas()
         get_column_values = get_values_query.columns.values.tolist()
         if "EVENT" in get_column_values[-1]:
@@ -370,7 +370,7 @@ class MDM_BUILDER:
         else:
             insert = self.session.write_pandas(new_rows_df, table_name, database = self.mdm_database_name, schema = self.mdm_schema_name, overwrite = False)
         
-        self.log_writer(step="table_dim_builder", status="end")
+        self.log_writter(step="table_dim_builder", status="end")
         return new_rows_df
     
     def table_fact_builder(self, df, table_name):
@@ -381,9 +381,9 @@ class MDM_BUILDER:
         - df (DataFrame): DataFrame containing data to build the table.
         - table_name (str): Name of the table to build.
         """
-        self.log_writer(step="table_fact_builder", status="start")
+        self.log_writter(step="table_fact_builder", status="start")
         insert_df = self.session.write_pandas(df, table_name, database = self.mdm_database_name, schema=self.mdm_schema_name, overwrite = False, use_logical_type = True)
-        self.log_writer(step="table_fact_builder", status="end")
+        self.log_writter(step="table_fact_builder", status="end")
 
     def values_dict(self, table_name):
         """
@@ -395,7 +395,7 @@ class MDM_BUILDER:
         Returns:
         - data_dict (dict): Values dictionary.
         """
-        self.log_writer(step="values_dict", status="start")
+        self.log_writter(step="values_dict", status="start")
         data = self.session.sql(f"SELECT * FROM {self.mdm_database_name}.{self.mdm_schema_name}.{table_name}").to_pandas()
         data_list = data.values.tolist()
         print(data_list)
@@ -406,7 +406,7 @@ class MDM_BUILDER:
         name = table_name.replace('_DIM', '')
         data_dict[name] = data_values
         print(data_dict)
-        self.log_writer(step="values_dict", status="end")
+        self.log_writter(step="values_dict", status="end")
         return data_dict
     
     def write_csv(self, table_name):
@@ -419,10 +419,10 @@ class MDM_BUILDER:
         Returns:
         - str: Message indicating successful file creation.
         """
-        self.log_writer(step="write_csv", status="start")
+        self.log_writter(step="write_csv", status="start")
         data = self.session.sql(f"SELECT * FROM {self.mdm_database_name}.{self.mdm_schema_name}.{table_name}").to_pandas()
         output_file = data.to_csv(f'~/bitso_tech_challenge/challenge_2/target_files/{table_name}.csv')
-        self.log_writer(step="write_csv", status="end")
+        self.log_writter(step="write_csv", status="end")
         return ("Successfull file creation: " + table_name)
     
     def table_retriever(self, database_name, schema_name, table_name):
@@ -437,9 +437,9 @@ class MDM_BUILDER:
         Returns:
         - df (DataFrame): Retrieved DataFrame.
         """
-        self.log_writer(step="table_retriever", status="start")
+        self.log_writter(step="table_retriever", status="start")
         df = self.session.sql(f"SELECT * FROM {database_name}.{schema_name}.{table_name}").to_pandas()
-        self.log_writer(step="table_retriever", status="end")
+        self.log_writter(step="table_retriever", status="end")
         return df
     
     @staticmethod
@@ -511,7 +511,8 @@ class MDM_BUILDER:
         """
         Process event table.
         """
-        self.log_writer(step="event_table_process", status="start")
+        self.log_writter(step="mdm_process_start", status="start")
+        self.log_writter(step="event_table_process", status="start")
         clean_event_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_event_table_name)
         clean_deposit_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_deposit_table_name)
         clean_withdrawal_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_withdrawal_table_name)
@@ -531,28 +532,28 @@ class MDM_BUILDER:
         else:
             create_event_table = self.table_dim_builder(event_name_df, self.event_name_table_name)
             event_dim_csv = self.write_csv(self.event_name_table_name)
-        self.log_writer(step="event_table_process", status="end")
+        self.log_writter(step="event_table_process", status="end")
         return f"{self.login_type_table_name} table successfully created"
 
     def login_type_table_process(self):
         """
         Process login type table.
         """
-        self.log_writer(step="login_type_table_process", status="start")
+        self.log_writter(step="login_type_table_process", status="start")
         clean_event_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_event_table_name)
         
         login_type_name = clean_event_df[['LOGIN_TYPE']].drop_duplicates()
         print(login_type_name)
         create_login_type_table = self.table_dim_builder(login_type_name,self.login_type_table_name)
         dim_csv = self.write_csv(self.login_type_table_name)
-        self.log_writer(step="login_type_table_process", status="end")
+        self.log_writter(step="login_type_table_process", status="end")
         return f"{self.login_type_table_name} table successfully created"
 
     def currency_process(self):
         """
         Process currency table.
         """
-        self.log_writer(step="currency_process", status="start")
+        self.log_writter(step="currency_process", status="start")
         clean_deposit_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_deposit_table_name)
         clean_withdrawal_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_withdrawal_table_name)
         
@@ -563,27 +564,27 @@ class MDM_BUILDER:
 
         create_event_table = self.table_dim_builder(currency_df, self.currency_table_name)
         dim_csv = self.write_csv(self.currency_table_name)
-        self.log_writer(step="currency_process", status="end")
+        self.log_writter(step="currency_process", status="end")
         return f"{self.login_type_table_name} table successfully created"
     def interface_process(self):
         """
         Process interface table.
         """
-        self.log_writer(step="interface_process", status="start")
+        self.log_writter(step="interface_process", status="start")
         clean_withdrawal_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_withdrawal_table_name)
         
         withdrawal_event_name = clean_withdrawal_df[['INTERFACE']].drop_duplicates()
 
         create_event_table = self.table_dim_builder(withdrawal_event_name, self.interface_table_name)
         dim_csv = self.write_csv(self.event_name_table_name)
-        self.log_writer(step="interface_process", status="end")
+        self.log_writter(step="interface_process", status="end")
         return f"{self.login_type_table_name} table successfully created"
 
     def tx_status_process(self):
         """
         Process transaction status table.
         """
-        self.log_writer(step="tx_status_process", status="start")
+        self.log_writter(step="tx_status_process", status="start")
         clean_deposit_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_deposit_table_name)
         clean_withdrawal_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_withdrawal_table_name)
         
@@ -594,26 +595,26 @@ class MDM_BUILDER:
 
         create_tx_table = self.table_dim_builder(tx_status_df, self.tx_table_name)
         dim_csv = self.write_csv(self.event_name_table_name)
-        self.log_writer(step="tx_status_process", status="end")
+        self.log_writter(step="tx_status_process", status="end")
         return f"{self.login_type_table_name} table successfully created"
 
     def users_process(self):
         """
         Process users table.
         """
-        self.log_writer(step="users_process", status="start")
+        self.log_writter(step="users_process", status="start")
         clean_users_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_users_table_name)
         
         create_users_table = self.table_dim_builder(clean_users_df, self.target_users_table_name)
         event_dim_csv = self.write_csv(self.target_users_table_name)
-        self.log_writer(step="users_process", status="end")
+        self.log_writter(step="users_process", status="end")
         return f"{self.login_type_table_name} table successfully created"
     
     def user_activities_process(self):
         """
         Process user activities table.
         """
-        self.log_writer(step="user_activities_process", status="start")
+        self.log_writter(step="user_activities_process", status="start")
         deposit_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_deposit_table_name)
         withdrawal_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_withdrawal_table_name)
         event_df = self.table_retriever(self.staging_database_name, self.cleaning_schema_name, self.source_event_table_name)
@@ -656,8 +657,8 @@ class MDM_BUILDER:
 
         write_fact = self.table_fact_builder(concat_df, self.user_activities_table_name)
         write_csv = self.write_csv(self.user_activities_table_name)
-        self.log_writer(step="users_process", status="end")
-        self.log_writer(step="user_activities_process", status="end")
+        self.log_writter(step="users_process", status="end")
+        self.log_writter(step="user_activities_process", status="end")
         return f"{self.login_type_table_name} table successfully created" 
 
 
@@ -665,7 +666,6 @@ class MDM_BUILDER:
         """
         Start MDM transformation process.
         """
-        self.log_writer(step="mdm_process_start", status="start")
         self.event_table_process()
         self.login_type_table_process()
         self.currency_process()
@@ -673,7 +673,7 @@ class MDM_BUILDER:
         self.tx_status_process()
         self.users_process()
         self.user_activities_process()
-        self.log_writer(step="mdm_process_start", status="end")
+        self.log_writter(step="mdm_process_start", status="end")
 
 
 
@@ -684,13 +684,8 @@ env_variables_files = 'variables.yaml'
 source_path = '~/bitso_tech_challenge/challenge_2/source_files/'
 files = os.listdir(os.path.expanduser(source_path))
 
-# start_elt = ELT(files, config_file, env_variables_files, source_path)
-# start_elt.start_etl_process()
+start_elt = ELT(files, config_file, env_variables_files, source_path)
+start_elt.start_etl_process()
 
 start_mdm = MDM_BUILDER(config_file, env_variables_files)
 start_mdm.mdm_process_start()
-
-
-
-    
-

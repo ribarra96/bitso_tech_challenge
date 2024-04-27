@@ -1,6 +1,10 @@
 ETL and MDM Process
+
 Overview
 This project consists of two main classes: ELT for Extract, Load, Transform (ELT) operations, and MDM_BUILDER for Master Data Management (MDM) processes. The ELT class is responsible for orchestrating the extraction, transformation, and loading of data from CSV files to Snowflake, while the MDM_BUILDER class handles the creation and transformation of dimension and fact tables for MDM purposes.
+
+Modeling Technique
+In this project I used a star schema model. Since they were not too many dimension depending on data the star schema is an appropiate solution to this dataset having a centralized user_activity_fact table and dimensions around like currency_dim, interface_dim, login_type_dim, etc which helps to denormalize the data and does not make the model too complex to understand.
 
 ELT Class
 Description
